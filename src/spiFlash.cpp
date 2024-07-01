@@ -524,6 +524,25 @@ void SPIFlash::read_id()
 			printf("%x ", rx[i]);
 	}
 
+    // 4 bytes of dummy clocks then 8-byte UID
+	_spi->spi_put(0x4B, NULL, rx, 12);
+
+	for (int i=0; i < 12; i++) {
+		if (_verbose > 0)
+			printf("%x ", rx[i]);
+	}
+
+    if (_verbose > 0)
+        printf("\n");
+
+	uint64_t _uid = 0;
+	for (int i=0; i < 8; i++) {
+		_uid = _uid << 8;
+		_uid |= (0x00ff & (int)rx[i+4]);
+	}
+
+    printf("Flash UID: %llx\n", _uid);
+
 	/* something wrong with read */
 	if ((_jedec_id >> 8) == 0xffff)
 		throw std::runtime_error("Read ID failed");
